@@ -6,7 +6,7 @@
 /*   By: amurtas <amurtas@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/15 14:42:06 by amurtas           #+#    #+#             */
-/*   Updated: 2026/01/15 14:44:27 by amurtas          ###   ########.fr       */
+/*   Updated: 2026/01/25 18:22:37 by amurtas          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,4 +41,20 @@ char	*ft_strdup(const char *s)
 	}
 	cpy[i] = '\0';
 	return (cpy);
+}
+
+int	ft_strncmp(const char *s1, const char *s2, size_t n)
+{
+	size_t			i;
+	unsigned char	*sc1;
+	unsigned char	*sc2;
+
+	sc1 = (unsigned char *)s1;
+	sc2 = (unsigned char *)s2;
+	i = 0;
+	if (n == 0)
+		return (0);
+	while (sc1[i] && sc2[i] && i < n - 1 && sc1[i] == sc2[i])
+		i++;
+	return (sc1[i] - sc2[i]);
 }
