@@ -6,73 +6,95 @@
 /*   By: amurtas <amurtas@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/15 12:40:05 by amurtas           #+#    #+#             */
-/*   Updated: 2026/01/25 18:30:42 by amurtas          ###   ########.fr       */
+/*   Updated: 2026/01/29 16:16:03 by amurtas          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-void	extract_envp(char **envp, t_pip_struct *pipst)
+void	close_and_wait_all(int fd[2], int wait, pid_t pid1, pid_t pid2)
 {
-	int	i;
-	
-	i = 0;
-	while (envp[0][i])
+	if (fd[0] != -1)
+		close(fd[0]);
+	if (fd[1] != -1)
+		close(fd[1]);
+	fd[0] = -1;
+	fd[1] = -1;
+	if (wait == 1)
 	{
-		pipst->envar[i] = ft_split(envp, ':');
-		i++;
+		waitpid(pid1, NULL, 0);
+		waitpid(pid2, NULL, 0);
 	}
-	
 }
 
-void	ft_execute(char **argv, char **envp)
+void	first_child(int fd[2], char **argv, char **envp)
 {
-	char **tab;
-	char **path;
-	int i;
-	int stop;
+	int	infile;
 
-	stop = 0;
-	i = 0;
-	tab = ft_split(argv[2], ' ');
-	while (envp[i] && stop == 0)
+	infile = open(argv[1], O_RDONLY);
+	if (infile == -1)
 	{
-		if (ft_strncmp(envp[i], "PATH", 4) == 0);
-			stop = 1;
+		perror("open infile failed");
+		exit(1);
 	}
-	path = ft_split(envp[i], ':');
-	
+	dup2(infile, STDIN_FILENO);
+	dup2(fd[1], STDOUT_FILENO);
+	close_and_wait_all(fd, 0, 0, 0);
+	if (infile != -1)
+		close(infile);
+	infile = -1;
+	ft_execute(argv[2], envp, fd);
+}
+
+void	second_child(int fd[2], char **argv, char **envp)
+{
+	int	outfile;
+
+	outfile = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (outfile == -1)
+	{
+		perror("open outfile failed");
+		exit(1);
+	}
+	dup2(fd[0], STDIN_FILENO);
+	dup2(outfile, STDOUT_FILENO);
+	close_and_wait_all(fd, 0, 0, 0);
+	if (outfile != -1)
+		close(outfile);
+	outfile = -1;
+	ft_execute(argv[3], envp, fd);
+}
+
+void	check_pid(pid_t	pid)
+{
+	if (pid < 0)
+	{
+		perror("failed fork");
+		exit(1);
+	}
 }
 
 int	main(int argc, char **argv, char **envp)
 {
 	int		fd[2];
-	int		infile;
 	pid_t	pid1;
 	pid_t	pid2;
 
 	if (argc != 5)
 		return (1);
 	if (pipe(fd) == -1)
+	{
 		perror("failed pipe");
+		exit(1);
+	}
 	pid1 = fork();
-	if (pid1 < 0)
-	{
-		perror("failed fork");
-		return (1);
-	}
+	check_pid(pid1);
 	if (pid1 == 0)
-	{
-		infile = open(argv[1], O_RDONLY);
-		if (infile == -1)
-		{
-			perror("open failed");
-			return (1);
-		}
-		dup2(infile, STDIN_FILENO);
-		dup2(fd[1], STDOUT_FILENO);
-		close(fd[0]);
-		close(fd[1]);
-		close (infile);
-	}
+		first_child(fd, argv, envp);
+	pid2 = fork();
+	check_pid(pid2);
+	if (pid2 == 0)
+		second_child(fd, argv, envp);
+	close_and_wait_all(fd, 1, pid1, pid2);
+	return (0);
 }

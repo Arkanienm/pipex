@@ -6,11 +6,23 @@
 /*   By: amurtas <amurtas@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/20 09:45:46 by amurtas           #+#    #+#             */
-/*   Updated: 2026/01/15 14:50:34 by amurtas          ###   ########.fr       */
+/*   Updated: 2026/01/26 14:12:46 by amurtas          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
+
+size_t	ft_strlen(const char *s)
+{
+	size_t	i;
+
+	i = 0;
+	if (s[i] == '\0')
+		return (0);
+	while (s[i] != '\0')
+		i++;
+	return (i);
+}
 
 char	*ft_substr(char const *s, unsigned int start, size_t len)
 {
