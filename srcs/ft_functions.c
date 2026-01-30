@@ -6,11 +6,21 @@
 /*   By: amurtas <amurtas@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/15 14:42:06 by amurtas           #+#    #+#             */
-/*   Updated: 2026/01/26 15:23:49 by amurtas          ###   ########.fr       */
+/*   Updated: 2026/01/30 14:20:53 by amurtas          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
+
+void	ft_close_all(int fd[2], int file)
+{
+	if (fd[0] != -1)
+		close(fd[0]);
+	if (fd[1] != -1)
+		close(fd[1]);
+	if (file != -1)
+		close(file);
+}
 
 char	*ft_strchr(const char *s, int c)
 {

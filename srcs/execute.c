@@ -6,13 +6,13 @@
 /*   By: amurtas <amurtas@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/26 15:35:03 by amurtas           #+#    #+#             */
-/*   Updated: 2026/01/29 16:16:33 by amurtas          ###   ########.fr       */
+/*   Updated: 2026/01/30 17:25:03 by amurtas          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-int	find_path(char **tab, char **envp, char **path, int fd[2])
+int	find_path(char **tab, char **envp)
 {
 	int	i;
 	int	stop;
@@ -22,7 +22,6 @@ int	find_path(char **tab, char **envp, char **path, int fd[2])
 	if (!tab || !tab[i])
 	{
 		ft_free_tab(tab);
-		close_and_wait_all(fd, 0, 0, 0);
 		exit(127);
 	}
 	if (ft_strchr(tab[0], '/') && access(tab[0], X_OK) == 0)
@@ -35,11 +34,18 @@ int	find_path(char **tab, char **envp, char **path, int fd[2])
 			i++;
 	}
 	if (stop == 0)
-		ft_command_error(tab, path);
+		return (-1);
 	return (i);
 }
 
-void	ft_execute(char *argv, char **envp, int fd[2])
+void	ft_pathing(char **tab, char **envp)
+{
+	if (access(tab[0], X_OK) == 0)
+		execve(tab[0], tab, envp);
+	ft_command_error(tab, NULL);
+}
+
+int	ft_execute(char *argv, char **envp)
 {
 	char	**tab;
 	char	**path;
@@ -50,18 +56,20 @@ void	ft_execute(char *argv, char **envp, int fd[2])
 	path = NULL;
 	i = 0;
 	tab = ft_split(argv, ' ');
-	i = find_path(tab, envp, path, fd);
+	i = find_path(tab, envp);
+	if (i == -1)
+		ft_pathing(tab, envp);
 	path = ft_split(envp[i] + 5, ':');
 	i = 0;
-	while (path[i])
+	while (path[i++])
 	{
 		tmp_path = ft_strjoin(path[i], "/");
 		str_path = ft_strjoin(tmp_path, tab[0]);
 		free(tmp_path);
-		if (access(str_path, F_OK | X_OK) == 0)
+		if (str_path && access(str_path, F_OK | X_OK) == 0)
 			execve(str_path, tab, envp);
 		free(str_path);
-		i++;
 	}
 	ft_command_error(tab, path);
+	return (0);
 }

@@ -6,7 +6,7 @@
 /*   By: amurtas <amurtas@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/15 14:19:26 by amurtas           #+#    #+#             */
-/*   Updated: 2026/01/29 16:15:25 by amurtas          ###   ########.fr       */
+/*   Updated: 2026/01/30 13:17:11 by amurtas          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,8 @@ void	ft_putstr_fd(char *s, int fd);
 void	ft_command_error(char **tab, char **path);
 void	ft_free_tab(char **tab);
 char	*ft_strchr(const char *s, int c);
-void	ft_execute(char *argv, char **envp, int fd[2]);
+int		ft_execute(char *argv, char **envp);
 void	close_and_wait_all(int fd[2], int wait, pid_t pid1, pid_t pid2);
+void	ft_close_all(int fd[2], int file);
 
 #endif
