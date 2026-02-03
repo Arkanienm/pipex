@@ -6,7 +6,7 @@
 /*   By: amurtas <amurtas@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/15 12:40:05 by amurtas           #+#    #+#             */
-/*   Updated: 2026/01/30 13:16:25 by amurtas          ###   ########.fr       */
+/*   Updated: 2026/02/03 16:50:00 by amurtas          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,9 +69,28 @@ void	second_child(int fd[2], char **argv, char **envp)
 		ft_close_all(fd, outfile);
 }
 
-void	check_pid(pid_t	pid)
+void	check_pid_fd(pid_t	pid, char **argv, int vpid)
 {
-	if (pid < 0)
+	int	infile;
+	int	outfile;
+
+	infile = open(argv[1], O_RDONLY);
+	if (infile == -1)
+	{
+		perror("open infile failed");
+		close(infile);
+		exit(1);
+	}
+	close (infile);
+	outfile = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (outfile == -1)
+	{
+		perror("open outfile failed");
+		close(outfile);
+		exit(1);
+	}
+	close (outfile);
+	if (vpid == 1 && pid < 0)
 	{
 		perror("failed fork");
 		exit(1);
@@ -86,6 +105,7 @@ int	main(int argc, char **argv, char **envp)
 
 	if (argc != 5)
 		return (1);
+	check_pid_fd(0, argv, 0);
 	if (pipe(fd) == -1)
 	{
 		perror("failed pipe");
@@ -93,11 +113,11 @@ int	main(int argc, char **argv, char **envp)
 		exit(1);
 	}
 	pid1 = fork();
-	check_pid(pid1);
+	check_pid_fd(pid1, argv, 1);
 	if (pid1 == 0)
 		first_child(fd, argv, envp);
 	pid2 = fork();
-	check_pid(pid2);
+	check_pid_fd(pid2, argv, 1);
 	if (pid2 == 0)
 		second_child(fd, argv, envp);
 	close_and_wait_all(fd, 1, pid1, pid2);
